@@ -1,0 +1,14 @@
+# Junk folders we don't need on GitHub
+node_modules/
+dist/
+.next/
+build/
+# Secrets (VERY IMPORTANT)
+.env
+*.log
+docker-compose.yml
+# Your private Obsidian learning folder
+Learning/
+learning/
+docs/
+Planning.md
