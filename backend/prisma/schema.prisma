@@ -11,25 +11,98 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  name      String?
+  id          String        @id @default(uuid())
+  email       String        @unique
+  password    String
+  name        String?
+  sessions    Session[]
+  categories  Category[]
+  topics      Topic[]
+  circles     StudyCircle[]
+  circleRuns  CircleRun[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Category {
+  id        String        @id @default(uuid())
+  name      String
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  topics    Topic[]
   sessions  Session[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  phases    CirclePhase[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Topic {
+  id         String        @id @default(uuid())
+  name       String
+  categoryId String
+  category   Category      @relation(fields: [categoryId], references: [id])
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  sessions   Session[]
+  phases     CirclePhase[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 }
 
 model Session {
-  id           String    @id @default(uuid())
+  id           String     @id @default(uuid())
   userId       String
-  user         User      @relation(fields: [userId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
   categoryId   String?
+  category     Category?  @relation(fields: [categoryId], references: [id])
   topicId      String?
-  startTime    DateTime  @default(now())
+  topic        Topic?     @relation(fields: [topicId], references: [id])
+  circleRunId  String?
+  circleRun    CircleRun? @relation(fields: [circleRunId], references: [id])
+  phaseOrder   Int?       // which phase within the circle this session tracks
+  startTime    DateTime   @default(now())
   endTime      DateTime?
   durationMins Int?
-  status       String    @default("running") // idle, running, stopped
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  status       String     @default("running") // running | stopped
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model StudyCircle {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  name        String
+  description String?
+  phases      CirclePhase[]
+  runs        CircleRun[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model CirclePhase {
+  id           String      @id @default(uuid())
+  circleId     String
+  circle       StudyCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  order        Int         // 1-indexed position in the sequence
+  type         String      // "study" | "break"
+  durationMins Int
+  label        String?     // e.g. "Focus Block", "Short Break"
+  categoryId   String?
+  category     Category?   @relation(fields: [categoryId], references: [id])
+  topicId      String?
+  topic        Topic?      @relation(fields: [topicId], references: [id])
+}
+
+model CircleRun {
+  id                String      @id @default(uuid())
+  circleId          String
+  circle            StudyCircle @relation(fields: [circleId], references: [id])
+  userId            String
+  user              User        @relation(fields: [userId], references: [id])
+  startedAt         DateTime    @default(now())
+  completedAt       DateTime?
+  status            String      @default("running") // running | completed | abandoned
+  currentPhaseOrder Int         @default(1)
+  sessions          Session[]
 }
