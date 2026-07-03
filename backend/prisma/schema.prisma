@@ -11,17 +11,18 @@ datasource db {
 }
 
 model User {
-  id          String        @id @default(uuid())
-  email       String        @unique
-  password    String
-  name        String?
-  sessions    Session[]
-  categories  Category[]
-  topics      Topic[]
-  circles     StudyCircle[]
-  circleRuns  CircleRun[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(uuid())
+  email         String        @unique
+  password      String
+  name          String?
+  sessions      Session[]
+  categories    Category[]
+  topics        Topic[]
+  circles       StudyCircle[]
+  circleRuns    CircleRun[]
+  quarterPlans  QuarterPlan[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Category {
@@ -37,16 +38,17 @@ model Category {
 }
 
 model Topic {
-  id         String        @id @default(uuid())
-  name       String
-  categoryId String
-  category   Category      @relation(fields: [categoryId], references: [id])
-  userId     String
-  user       User          @relation(fields: [userId], references: [id])
-  sessions   Session[]
-  phases     CirclePhase[]
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  id                 String             @id @default(uuid())
+  name               String
+  categoryId         String
+  category           Category           @relation(fields: [categoryId], references: [id])
+  userId             String
+  user               User               @relation(fields: [userId], references: [id])
+  sessions           Session[]
+  phases             CirclePhase[]
+  quarterPlanTopics  QuarterPlanTopic[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 }
 
 model Session {
@@ -64,8 +66,30 @@ model Session {
   endTime      DateTime?
   durationMins Int?
   status       String     @default("running") // running | stopped
+  notes        String?    // free-form notes taken during/after session
+  rating       String?    // productive | unproductive | null
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+}
+
+model QuarterPlan {
+  id        String             @id @default(uuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+  name      String             // e.g. "Q3 2026"
+  topics    QuarterPlanTopic[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model QuarterPlanTopic {
+  id        String      @id @default(uuid())
+  planId    String
+  plan      QuarterPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  topicId   String
+  topic     Topic       @relation(fields: [topicId], references: [id])
+  order     Int         @default(0)
+  createdAt DateTime    @default(now())
 }
 
 model StudyCircle {

@@ -9,13 +9,21 @@ export const startSession = async (userId: string, categoryId?: string, topicId?
   return data;
 };
 
-export const stopSession = async (sessionId: string) => {
-  const { data } = await api.patch(`/sessions/${sessionId}/stop`);
+export const stopSession = async (
+  sessionId: string,
+  opts?: { notes?: string; rating?: string },
+) => {
+  const { data } = await api.patch(`/sessions/${sessionId}/stop`, opts ?? {});
   return data;
 };
 
 export const getSessions = async (userId: string) => {
   const { data } = await api.get(`/sessions/user/${userId}`);
+  return data;
+};
+
+export const deleteSession = async (sessionId: string) => {
+  const { data } = await api.delete(`/sessions/${sessionId}`);
   return data;
 };
 
@@ -90,6 +98,33 @@ export const advancePhase = async (runId: string) => {
 
 export const abandonRun = async (runId: string) => {
   const { data } = await api.patch(`/circles/runs/${runId}/abandon`);
+  return data;
+};
+
+// ─── Quarter Plans ─────────────────────────────────────────────────────────────
+
+export const createQuarterPlan = async (userId: string, name: string) => {
+  const { data } = await api.post('/quarter-plans', { userId, name });
+  return data;
+};
+
+export const getQuarterPlans = async (userId: string) => {
+  const { data } = await api.get(`/quarter-plans/user/${userId}`);
+  return data;
+};
+
+export const addTopicToPlan = async (planId: string, topicId: string, order?: number) => {
+  const { data } = await api.post(`/quarter-plans/${planId}/topics`, { topicId, order });
+  return data;
+};
+
+export const removeTopicFromPlan = async (planId: string, topicId: string) => {
+  const { data } = await api.delete(`/quarter-plans/${planId}/topics/${topicId}`);
+  return data;
+};
+
+export const deleteQuarterPlan = async (planId: string) => {
+  const { data } = await api.delete(`/quarter-plans/${planId}`);
   return data;
 };
 
