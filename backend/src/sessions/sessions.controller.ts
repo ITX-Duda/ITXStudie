@@ -7,12 +7,13 @@ export class SessionsController {
 
   @Post('start')
   startSession(
-    @Body() body: { userId: string; categoryId?: string; topicId?: string },
+    @Body() body: { userId: string; categoryId?: string; topicId?: string; studyCycleStep?: string },
   ) {
     return this.sessionsService.startSession(
       body.userId,
       body.categoryId,
       body.topicId,
+      body.studyCycleStep,
     );
   }
 

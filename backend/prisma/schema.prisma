@@ -65,11 +65,12 @@ model Session {
   startTime    DateTime   @default(now())
   endTime      DateTime?
   durationMins Int?
-  status       String     @default("running") // running | stopped
-  notes        String?    // free-form notes taken during/after session
-  rating       String?    // productive | unproductive | null
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  status          String     @default("running") // running | stopped
+  notes           String?    // free-form notes taken during/after session
+  rating          String?    // productive | unproductive | null
+  studyCycleStep  String?    // preview | attend | review | study | check
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
 
 model QuarterPlan {

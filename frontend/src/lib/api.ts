@@ -4,8 +4,13 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
 });
 
-export const startSession = async (userId: string, categoryId?: string, topicId?: string) => {
-  const { data } = await api.post('/sessions/start', { userId, categoryId, topicId });
+export const startSession = async (
+  userId: string,
+  categoryId?: string,
+  topicId?: string,
+  studyCycleStep?: string,
+) => {
+  const { data } = await api.post('/sessions/start', { userId, categoryId, topicId, studyCycleStep });
   return data;
 };
 

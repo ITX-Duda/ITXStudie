@@ -3,12 +3,13 @@ import { create } from 'zustand';
 interface SessionMeta {
   categoryName: string | null;
   topicName: string | null;
+  studyCycleStep: string | null;
 }
 
 interface SessionState {
   status: 'idle' | 'running' | 'paused';
   startTime: string | null;
-  targetMinutes: number; // For countdown
+  targetMinutes: number;
   selectedCategory: { id: string; name: string } | null;
   selectedTopic: { id: string; name: string } | null;
   activeSessionMeta: SessionMeta | null;
@@ -19,7 +20,7 @@ interface SessionState {
 export const useSessionStore = create<SessionState>((set) => ({
   status: 'idle',
   startTime: null,
-  targetMinutes: 25, // Default Pomodoro
+  targetMinutes: 25,
   selectedCategory: null,
   selectedTopic: null,
   activeSessionMeta: null,

@@ -5,7 +5,12 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
-  async startSession(userId: string, categoryId?: string, topicId?: string) {
+  async startSession(
+    userId: string,
+    categoryId?: string,
+    topicId?: string,
+    studyCycleStep?: string,
+  ) {
     // Upsert mock user so foreign key constraint doesn't fail
     await this.prisma.user.upsert({
       where: { id: userId },
@@ -23,6 +28,7 @@ export class SessionsService {
         userId,
         categoryId,
         topicId,
+        studyCycleStep,
         status: 'running',
         startTime: new Date(),
       },

@@ -46,6 +46,10 @@ import CategorySelector from '@/components/selectors/CategorySelector';
 import TopicSelector from '@/components/selectors/TopicSelector';
 import RatingModal from '@/components/session/RatingModal';
 import QuarterPlanCard from '@/components/quarter/QuarterPlanCard';
+import StudyCycleStepSelector, {
+  StudyCycleStep,
+  STUDY_CYCLE_STEPS,
+} from '@/components/session/StudyCycleStepSelector';
 
 export default function Home() {
   const user = useUserStore((state) => state.user);
@@ -61,6 +65,7 @@ export default function Home() {
 
   const [catId, setCatId] = useState('');
   const [topId, setTopId] = useState('');
+  const [studyCycleStep, setStudyCycleStep] = useState<StudyCycleStep | null>(null);
 
   const [remainingSeconds, setRemainingSeconds] = useState(targetMinutes * 60);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -131,6 +136,7 @@ export default function Home() {
           activeSessionMeta: {
             categoryName: active.category?.name ?? null,
             topicName: active.topic?.name ?? null,
+            studyCycleStep: active.studyCycleStep ?? null,
           },
         });
       }
@@ -153,10 +159,22 @@ export default function Home() {
   };
 
   // ─── Session handlers ───────────────────────────────────────────────────────
+  const handleStepChange = (step: StudyCycleStep) => {
+    setStudyCycleStep(step);
+    // Auto-preset timer based on step
+    const cfg = STUDY_CYCLE_STEPS.find((s) => s.id === step);
+    if (cfg) setSession({ targetMinutes: cfg.suggestedMins });
+  };
+
   const handleStart = async () => {
     if (!user) return;
     try {
-      const session = await startSession(user.id, catId || undefined, topId || undefined);
+      const session = await startSession(
+        user.id,
+        catId || undefined,
+        topId || undefined,
+        studyCycleStep || undefined,
+      );
       setActiveSession(session);
       const cat = categories.find((c) => c.id === catId);
       const top = topics.find((t) => t.id === topId);
@@ -164,6 +182,7 @@ export default function Home() {
         activeSessionMeta: {
           categoryName: cat?.name ?? null,
           topicName: top?.name ?? null,
+          studyCycleStep: studyCycleStep,
         },
       });
       fetchAll();
@@ -273,9 +292,14 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Timer */}
           <div className="lg:col-span-5 space-y-6">
-            {/* Category/Topic selector (idle only) */}
+            {/* Category/Topic + Study Cycle selector (idle only) */}
             {status === 'idle' && (
-              <div className="bg-slate-900/30 border border-emerald-900/30 rounded-2xl p-6 space-y-4">
+              <div className="bg-slate-900/30 border border-emerald-900/30 rounded-2xl p-6 space-y-5">
+                <StudyCycleStepSelector
+                  selected={studyCycleStep}
+                  onChange={handleStepChange}
+                />
+                <div className="border-t border-slate-800" />
                 <CategorySelector
                   categories={categories}
                   selectedId={catId}
@@ -293,7 +317,17 @@ export default function Home() {
 
             {/* Active session meta (running only) */}
             {status === 'running' && activeSessionMeta && (
-              <div className="bg-emerald-900/10 border border-emerald-700/30 rounded-2xl p-4 space-y-1">
+              <div className="bg-emerald-900/10 border border-emerald-700/30 rounded-2xl p-4 space-y-2">
+                {activeSessionMeta.studyCycleStep && (() => {
+                  const cfg = STUDY_CYCLE_STEPS.find((s) => s.id === activeSessionMeta.studyCycleStep);
+                  return cfg ? (
+                    <div className={`flex items-center gap-2 text-sm font-semibold ${cfg.color}`}>
+                      <span className="text-xl">{cfg.emoji}</span>
+                      <span>{cfg.label}</span>
+                      <span className="text-xs font-normal text-slate-500">— {cfg.description}</span>
+                    </div>
+                  ) : null;
+                })()}
                 {activeSessionMeta.categoryName && (
                   <div className="flex items-center gap-2 text-sm">
                     <Tag className="w-3.5 h-3.5 text-emerald-500" />
@@ -444,6 +478,14 @@ export default function Home() {
                                   {session.topic.name}
                                 </span>
                               )}
+                              {session.studyCycleStep && (() => {
+                                const cfg = STUDY_CYCLE_STEPS.find((s) => s.id === session.studyCycleStep);
+                                return cfg ? (
+                                  <span className={`text-xs px-1.5 py-0.5 rounded-md border ${cfg.bgColor} ${cfg.color} ${cfg.borderColor} border-opacity-40`}>
+                                    {cfg.emoji} {cfg.label}
+                                  </span>
+                                ) : null;
+                              })()}
                               {ratingLabel && (
                                 <span className={`text-xs ${ratingColor}`}>
                                   {ratingLabel}
